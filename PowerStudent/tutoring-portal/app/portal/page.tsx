@@ -25,10 +25,10 @@ type Assignment = {
 };
 
 const STATUS_LABEL: Record<string, string> = {
-  assigned: "待完成",
-  submitted: "已提交",
-  graded: "已批改",
-  missing: "未提交",
+  assigned: "Assigned",
+  submitted: "Submitted",
+  graded: "Graded",
+  missing: "Missing",
 };
 
 export default function PortalPage() {
@@ -71,7 +71,7 @@ export default function PortalPage() {
   if (loading) {
     return (
       <main className="flex-1 flex items-center justify-center text-[var(--ink-soft)]">
-        加载中…
+        Loading…
       </main>
     );
   }
@@ -89,23 +89,23 @@ export default function PortalPage() {
       <header className="flex items-start justify-between mb-10 ledger-rule pb-6">
         <div>
           <p className="font-mono text-xs tracking-[0.2em] uppercase text-[var(--ink-soft)] mb-1">
-            学号 {studentId}
+            Student ID {studentId}
           </p>
-          <h1 className="font-display text-3xl font-semibold">{name} 同学</h1>
+          <h1 className="font-display text-3xl font-semibold">Welcome, {name}</h1>
         </div>
         <button
           onClick={handleLogout}
           className="text-sm text-[var(--ink-soft)] underline hover:text-[var(--ink)]"
         >
-          退出登录
+          Log out
         </button>
       </header>
 
       <section className="mb-12">
-        <h2 className="font-display text-xl font-semibold mb-4">我的课程</h2>
+        <h2 className="font-display text-xl font-semibold mb-4">My Courses</h2>
         {courses.length === 0 ? (
           <p className="text-[var(--ink-soft)] text-sm">
-            老师还没有为你安排课程。
+            Your teacher hasn&apos;t added any courses for you yet.
           </p>
         ) : (
           <div className="space-y-3">
@@ -118,7 +118,7 @@ export default function PortalPage() {
                   <p className="font-medium">{c.name}</p>
                   <p className="text-sm text-[var(--ink-soft)]">
                     {[c.subject, c.teacher, c.schedule].filter(Boolean).join(" · ") ||
-                      "暂无更多信息"}
+                      "No additional details"}
                   </p>
                 </div>
                 <div className="stamp w-16 h-16 shrink-0 text-lg">
@@ -131,19 +131,19 @@ export default function PortalPage() {
       </section>
 
       <section>
-        <h2 className="font-display text-xl font-semibold mb-4">我的作业</h2>
+        <h2 className="font-display text-xl font-semibold mb-4">My Assignments</h2>
         {assignments.length === 0 ? (
-          <p className="text-[var(--ink-soft)] text-sm">暂时没有作业记录。</p>
+          <p className="text-[var(--ink-soft)] text-sm">No assignments yet.</p>
         ) : (
           <div className="bg-white rounded-lg border border-[var(--paper-line)] overflow-hidden">
             <table className="w-full text-sm">
               <thead>
                 <tr className="ledger-rule text-left text-[var(--ink-soft)] font-mono text-xs uppercase tracking-wide">
-                  <th className="px-5 py-3">作业</th>
-                  <th className="px-5 py-3">课程</th>
-                  <th className="px-5 py-3">截止日期</th>
-                  <th className="px-5 py-3">状态</th>
-                  <th className="px-5 py-3 text-right">得分</th>
+                  <th className="px-5 py-3">Assignment</th>
+                  <th className="px-5 py-3">Course</th>
+                  <th className="px-5 py-3">Due Date</th>
+                  <th className="px-5 py-3">Status</th>
+                  <th className="px-5 py-3 text-right">Score</th>
                 </tr>
               </thead>
               <tbody>
@@ -153,7 +153,7 @@ export default function PortalPage() {
                       <p className="font-medium">{a.title}</p>
                       {a.feedback && (
                         <p className="text-xs text-[var(--ink-soft)] mt-0.5">
-                          老师评语：{a.feedback}
+                          Feedback: {a.feedback}
                         </p>
                       )}
                     </td>

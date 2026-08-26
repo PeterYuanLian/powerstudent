@@ -8,7 +8,7 @@ export async function POST(req: NextRequest) {
 
   if (!studentId || !password) {
     return NextResponse.json(
-      { error: "请填写学号和密码。" },
+      { error: "Please enter your student ID and password." },
       { status: 400 }
     );
   }
@@ -22,7 +22,7 @@ export async function POST(req: NextRequest) {
 
   if (error || !student) {
     return NextResponse.json(
-      { error: "学号或密码不正确。" },
+      { error: "Incorrect student ID or password." },
       { status: 401 }
     );
   }
@@ -30,7 +30,7 @@ export async function POST(req: NextRequest) {
   const ok = await verifyPassword(password, student.password_hash);
   if (!ok) {
     return NextResponse.json(
-      { error: "学号或密码不正确。" },
+      { error: "Incorrect student ID or password." },
       { status: 401 }
     );
   }

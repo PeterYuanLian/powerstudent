@@ -9,7 +9,7 @@ export async function POST(req: NextRequest) {
 
   const { studentId, name, password } = await req.json();
   if (!studentId || !name || !password) {
-    return NextResponse.json({ error: "学号、姓名、密码均为必填。" }, { status: 400 });
+    return NextResponse.json({ error: "Student ID, name, and password are required." }, { status: 400 });
   }
 
   const supabase = getSupabaseAdmin();
@@ -22,7 +22,7 @@ export async function POST(req: NextRequest) {
     .single();
 
   if (error) {
-    const message = error.code === "23505" ? "该学号已存在。" : error.message;
+    const message = error.code === "23505" ? "This student ID already exists." : error.message;
     return NextResponse.json({ error: message }, { status: 400 });
   }
 
@@ -34,7 +34,7 @@ export async function PATCH(req: NextRequest) {
   if (authError) return authError;
 
   const { id, name, password } = await req.json();
-  if (!id) return NextResponse.json({ error: "缺少学生 id。" }, { status: 400 });
+  if (!id) return NextResponse.json({ error: "Missing student id." }, { status: 400 });
 
   const supabase = getSupabaseAdmin();
   const update: Record<string, string> = {};
@@ -42,7 +42,7 @@ export async function PATCH(req: NextRequest) {
   if (password) update.password_hash = await hashPassword(password);
 
   if (Object.keys(update).length === 0) {
-    return NextResponse.json({ error: "没有要更新的内容。" }, { status: 400 });
+    return NextResponse.json({ error: "Nothing to update." }, { status: 400 });
   }
 
   const { error } = await supabase.from("students").update(update).eq("id", id);
@@ -56,7 +56,7 @@ export async function DELETE(req: NextRequest) {
   if (authError) return authError;
 
   const id = req.nextUrl.searchParams.get("id");
-  if (!id) return NextResponse.json({ error: "缺少学生 id。" }, { status: 400 });
+  if (!id) return NextResponse.json({ error: "Missing student id." }, { status: 400 });
 
   const supabase = getSupabaseAdmin();
   const { error } = await supabase.from("students").delete().eq("id", id);

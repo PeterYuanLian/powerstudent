@@ -7,13 +7,13 @@ export async function POST(req: NextRequest) {
 
   if (!adminPassword) {
     return NextResponse.json(
-      { error: "服务器未配置 ADMIN_PASSWORD，请先在环境变量中设置。" },
+      { error: "Server is missing ADMIN_PASSWORD. Please set it in your environment variables." },
       { status: 500 }
     );
   }
 
   if (!password || password !== adminPassword) {
-    return NextResponse.json({ error: "管理员密码不正确。" }, { status: 401 });
+    return NextResponse.json({ error: "Incorrect admin password." }, { status: 401 });
   }
 
   const token = await signSession({ role: "admin" }, "8h");

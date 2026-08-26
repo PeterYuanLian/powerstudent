@@ -42,11 +42,11 @@ type Overview = {
   scores: ScoreRow[];
 };
 
-const TABS = ["学生", "课程", "成绩", "作业"] as const;
+const TABS = ["Students", "Courses", "Grades", "Assignments"] as const;
 
 export default function AdminPage() {
   const router = useRouter();
-  const [tab, setTab] = useState<(typeof TABS)[number]>("学生");
+  const [tab, setTab] = useState<(typeof TABS)[number]>("Students");
   const [data, setData] = useState<Overview | null>(null);
   const [loading, setLoading] = useState(true);
   const [notice, setNotice] = useState("");
@@ -79,7 +79,7 @@ export default function AdminPage() {
   if (loading || !data) {
     return (
       <main className="flex-1 flex items-center justify-center text-[var(--ink-soft)]">
-        加载中…
+        Loading…
       </main>
     );
   }
@@ -89,15 +89,15 @@ export default function AdminPage() {
       <header className="flex items-center justify-between mb-8">
         <div>
           <p className="font-mono text-xs tracking-[0.2em] uppercase text-[var(--ink-soft)] mb-1">
-            管理后台
+            Admin Dashboard
           </p>
-          <h1 className="font-display text-2xl font-semibold">数据登记台</h1>
+          <h1 className="font-display text-2xl font-semibold">Data Manager</h1>
         </div>
         <button
           onClick={handleLogout}
           className="text-sm text-[var(--ink-soft)] underline hover:text-[var(--ink)]"
         >
-          退出登录
+          Log out
         </button>
       </header>
 
@@ -123,14 +123,14 @@ export default function AdminPage() {
         </p>
       )}
 
-      {tab === "学生" && (
+      {tab === "Students" && (
         <StudentsTab data={data} reload={load} flash={flash} />
       )}
-      {tab === "课程" && <CoursesTab data={data} reload={load} flash={flash} />}
-      {tab === "成绩" && (
+      {tab === "Courses" && <CoursesTab data={data} reload={load} flash={flash} />}
+      {tab === "Grades" && (
         <EnrollmentsTab data={data} reload={load} flash={flash} />
       )}
-      {tab === "作业" && (
+      {tab === "Assignments" && (
         <AssignmentsTab data={data} reload={load} flash={flash} />
       )}
     </main>
@@ -183,7 +183,7 @@ function DangerLink(props: React.ButtonHTMLAttributes<HTMLButtonElement>) {
   );
 }
 
-// ---------- 学生 ----------
+// ---------- Students ----------
 function StudentsTab({
   data,
   reload,
@@ -212,12 +212,12 @@ function StudentsTab({
     setStudentId("");
     setName("");
     setPassword("");
-    flash("已添加学生。");
+    flash("Student added.");
     reload();
   }
 
   async function resetPassword(id: string) {
-    const newPassword = prompt("输入这名学生的新密码：");
+    const newPassword = prompt("Enter a new password for this student:");
     if (!newPassword) return;
     const res = await fetch("/api/admin/students", {
       method: "PATCH",
@@ -226,24 +226,24 @@ function StudentsTab({
     });
     const json = await res.json();
     if (!res.ok) return flash(json.error);
-    flash("密码已更新。");
+    flash("Password updated.");
   }
 
   async function removeStudent(id: string) {
-    if (!confirm("确定删除这名学生？相关成绩和作业记录也会一并删除。")) return;
+    if (!confirm("Delete this student? Their grades and assignments will also be removed.")) return;
     const res = await fetch(`/api/admin/students?id=${id}`, { method: "DELETE" });
     const json = await res.json();
     if (!res.ok) return flash(json.error);
-    flash("已删除。");
+    flash("Deleted.");
     reload();
   }
 
   return (
     <div className="space-y-6">
       <Card>
-        <h2 className="font-display text-lg font-semibold mb-4">添加学生</h2>
+        <h2 className="font-display text-lg font-semibold mb-4">Add Student</h2>
         <form onSubmit={addStudent} className="grid sm:grid-cols-3 gap-4">
-          <Field label="学号">
+          <Field label="Student ID">
             <input
               className={inputClass}
               value={studentId}
@@ -252,7 +252,7 @@ function StudentsTab({
               required
             />
           </Field>
-          <Field label="姓名">
+          <Field label="Name">
             <input
               className={inputClass}
               value={name}
@@ -260,7 +260,7 @@ function StudentsTab({
               required
             />
           </Field>
-          <Field label="初始密码">
+          <Field label="Initial Password">
             <input
               className={inputClass}
               value={password}
@@ -270,7 +270,7 @@ function StudentsTab({
           </Field>
           <div className="sm:col-span-3">
             <PrimaryButton disabled={submitting}>
-              {submitting ? "添加中…" : "添加学生"}
+              {submitting ? "Adding…" : "Add Student"}
             </PrimaryButton>
           </div>
         </form>
@@ -278,14 +278,14 @@ function StudentsTab({
 
       <Card>
         <h2 className="font-display text-lg font-semibold mb-4">
-          学生名单（{data.students.length}）
+          Students ({data.students.length})
         </h2>
         <table className="w-full text-sm">
           <thead>
             <tr className="ledger-rule text-left text-[var(--ink-soft)] font-mono text-xs uppercase">
-              <th className="py-2">学号</th>
-              <th className="py-2">姓名</th>
-              <th className="py-2 text-right">操作</th>
+              <th className="py-2">Student ID</th>
+              <th className="py-2">Name</th>
+              <th className="py-2 text-right">Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -295,9 +295,9 @@ function StudentsTab({
                 <td className="py-2">{s.name}</td>
                 <td className="py-2 text-right space-x-4">
                   <DangerLink onClick={() => resetPassword(s.id)}>
-                    重置密码
+                    Reset password
                   </DangerLink>
-                  <DangerLink onClick={() => removeStudent(s.id)}>删除</DangerLink>
+                  <DangerLink onClick={() => removeStudent(s.id)}>Delete</DangerLink>
                 </td>
               </tr>
             ))}
@@ -308,7 +308,7 @@ function StudentsTab({
   );
 }
 
-// ---------- 课程 ----------
+// ---------- Courses ----------
 function CoursesTab({
   data,
   reload,
@@ -339,25 +339,25 @@ function CoursesTab({
     setSubject("");
     setTeacher("");
     setSchedule("");
-    flash("已添加课程。");
+    flash("Course added.");
     reload();
   }
 
   async function removeCourse(id: string) {
-    if (!confirm("确定删除这门课程？相关成绩和作业也会一并删除。")) return;
+    if (!confirm("Delete this course? Related grades and assignments will also be removed.")) return;
     const res = await fetch(`/api/admin/courses?id=${id}`, { method: "DELETE" });
     const json = await res.json();
     if (!res.ok) return flash(json.error);
-    flash("已删除。");
+    flash("Deleted.");
     reload();
   }
 
   return (
     <div className="space-y-6">
       <Card>
-        <h2 className="font-display text-lg font-semibold mb-4">添加课程</h2>
+        <h2 className="font-display text-lg font-semibold mb-4">Add Course</h2>
         <form onSubmit={addCourse} className="grid sm:grid-cols-4 gap-4">
-          <Field label="课程名称">
+          <Field label="Course Name">
             <input
               className={inputClass}
               value={name}
@@ -365,31 +365,31 @@ function CoursesTab({
               required
             />
           </Field>
-          <Field label="科目">
+          <Field label="Subject">
             <input
               className={inputClass}
               value={subject}
               onChange={(e) => setSubject(e.target.value)}
             />
           </Field>
-          <Field label="任课老师">
+          <Field label="Teacher">
             <input
               className={inputClass}
               value={teacher}
               onChange={(e) => setTeacher(e.target.value)}
             />
           </Field>
-          <Field label="上课时间">
+          <Field label="Schedule">
             <input
               className={inputClass}
               value={schedule}
               onChange={(e) => setSchedule(e.target.value)}
-              placeholder="周六 14:00-16:00"
+              placeholder="Sat 2:00-4:00 PM"
             />
           </Field>
           <div className="sm:col-span-4">
             <PrimaryButton disabled={submitting}>
-              {submitting ? "添加中…" : "添加课程"}
+              {submitting ? "Adding…" : "Add Course"}
             </PrimaryButton>
           </div>
         </form>
@@ -397,16 +397,16 @@ function CoursesTab({
 
       <Card>
         <h2 className="font-display text-lg font-semibold mb-4">
-          课程列表（{data.courses.length}）
+          Courses ({data.courses.length})
         </h2>
         <table className="w-full text-sm">
           <thead>
             <tr className="ledger-rule text-left text-[var(--ink-soft)] font-mono text-xs uppercase">
-              <th className="py-2">名称</th>
-              <th className="py-2">科目</th>
-              <th className="py-2">老师</th>
-              <th className="py-2">时间</th>
-              <th className="py-2 text-right">操作</th>
+              <th className="py-2">Name</th>
+              <th className="py-2">Subject</th>
+              <th className="py-2">Teacher</th>
+              <th className="py-2">Schedule</th>
+              <th className="py-2 text-right">Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -419,7 +419,7 @@ function CoursesTab({
                   {c.schedule}
                 </td>
                 <td className="py-2 text-right">
-                  <DangerLink onClick={() => removeCourse(c.id)}>删除</DangerLink>
+                  <DangerLink onClick={() => removeCourse(c.id)}>Delete</DangerLink>
                 </td>
               </tr>
             ))}
@@ -430,7 +430,7 @@ function CoursesTab({
   );
 }
 
-// ---------- 成绩（选课 + 成绩登记） ----------
+// ---------- Grades (enrollment + grade entry) ----------
 function EnrollmentsTab({
   data,
   reload,
@@ -447,13 +447,13 @@ function EnrollmentsTab({
   const [submitting, setSubmitting] = useState(false);
 
   const studentName = (id: string) =>
-    data.students.find((s) => s.id === id)?.name ?? "（已删除学生）";
+    data.students.find((s) => s.id === id)?.name ?? "(deleted student)";
   const courseName = (id: string) =>
-    data.courses.find((c) => c.id === id)?.name ?? "（已删除课程）";
+    data.courses.find((c) => c.id === id)?.name ?? "(deleted course)";
 
   async function upsertEnrollment(e: React.FormEvent) {
     e.preventDefault();
-    if (!studentId || !courseId) return flash("请选择学生和课程。");
+    if (!studentId || !courseId) return flash("Please select a student and a course.");
     setSubmitting(true);
     const res = await fetch("/api/admin/enrollments", {
       method: "POST",
@@ -470,7 +470,7 @@ function EnrollmentsTab({
     if (!res.ok) return flash(json.error);
     setGrade("");
     setGradePercent("");
-    flash("成绩已登记。");
+    flash("Grade saved.");
     reload();
   }
 
@@ -480,7 +480,7 @@ function EnrollmentsTab({
     });
     const json = await res.json();
     if (!res.ok) return flash(json.error);
-    flash("已删除。");
+    flash("Deleted.");
     reload();
   }
 
@@ -488,32 +488,32 @@ function EnrollmentsTab({
     <div className="space-y-6">
       <Card>
         <h2 className="font-display text-lg font-semibold mb-4">
-          登记选课 / 成绩
+          Enroll Student / Set Grade
         </h2>
         <form onSubmit={upsertEnrollment} className="grid sm:grid-cols-4 gap-4">
-          <Field label="学生">
+          <Field label="Student">
             <select
               className={inputClass}
               value={studentId}
               onChange={(e) => setStudentId(e.target.value)}
               required
             >
-              <option value="">选择学生</option>
+              <option value="">Select student</option>
               {data.students.map((s) => (
                 <option key={s.id} value={s.id}>
-                  {s.name}（{s.student_id}）
+                  {s.name} ({s.student_id})
                 </option>
               ))}
             </select>
           </Field>
-          <Field label="课程">
+          <Field label="Course">
             <select
               className={inputClass}
               value={courseId}
               onChange={(e) => setCourseId(e.target.value)}
               required
             >
-              <option value="">选择课程</option>
+              <option value="">Select course</option>
               {data.courses.map((c) => (
                 <option key={c.id} value={c.id}>
                   {c.name}
@@ -521,14 +521,14 @@ function EnrollmentsTab({
               ))}
             </select>
           </Field>
-          <Field label="成绩（如 A / 92分）">
+          <Field label="Grade (e.g. A / 92)">
             <input
               className={inputClass}
               value={grade}
               onChange={(e) => setGrade(e.target.value)}
             />
           </Field>
-          <Field label="百分比（可选，用于统计）">
+          <Field label="Percent (optional, for stats)">
             <input
               type="number"
               className={inputClass}
@@ -538,10 +538,10 @@ function EnrollmentsTab({
           </Field>
           <div className="sm:col-span-4">
             <PrimaryButton disabled={submitting}>
-              {submitting ? "保存中…" : "保存成绩"}
+              {submitting ? "Saving…" : "Save Grade"}
             </PrimaryButton>
             <span className="ml-3 text-xs text-[var(--ink-soft)]">
-              同一位学生 + 同一门课程再次提交会覆盖原有成绩。
+              Submitting again for the same student + course overwrites the existing grade.
             </span>
           </div>
         </form>
@@ -549,15 +549,15 @@ function EnrollmentsTab({
 
       <Card>
         <h2 className="font-display text-lg font-semibold mb-4">
-          已登记成绩（{data.enrollments.length}）
+          Grades on Record ({data.enrollments.length})
         </h2>
         <table className="w-full text-sm">
           <thead>
             <tr className="ledger-rule text-left text-[var(--ink-soft)] font-mono text-xs uppercase">
-              <th className="py-2">学生</th>
-              <th className="py-2">课程</th>
-              <th className="py-2">成绩</th>
-              <th className="py-2 text-right">操作</th>
+              <th className="py-2">Student</th>
+              <th className="py-2">Course</th>
+              <th className="py-2">Grade</th>
+              <th className="py-2 text-right">Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -571,7 +571,7 @@ function EnrollmentsTab({
                 </td>
                 <td className="py-2 text-right">
                   <DangerLink onClick={() => removeEnrollment(en.id)}>
-                    删除
+                    Delete
                   </DangerLink>
                 </td>
               </tr>
@@ -583,7 +583,7 @@ function EnrollmentsTab({
   );
 }
 
-// ---------- 作业 ----------
+// ---------- Assignments ----------
 function AssignmentsTab({
   data,
   reload,
@@ -607,15 +607,15 @@ function AssignmentsTab({
   const [submittingScore, setSubmittingScore] = useState(false);
 
   const courseName = (id: string) =>
-    data.courses.find((c) => c.id === id)?.name ?? "（已删除课程）";
+    data.courses.find((c) => c.id === id)?.name ?? "(deleted course)";
   const studentName = (id: string) =>
-    data.students.find((s) => s.id === id)?.name ?? "（已删除学生）";
+    data.students.find((s) => s.id === id)?.name ?? "(deleted student)";
   const assignmentTitle = (id: string) =>
-    data.assignments.find((a) => a.id === id)?.title ?? "（已删除作业）";
+    data.assignments.find((a) => a.id === id)?.title ?? "(deleted assignment)";
 
   async function addAssignment(e: React.FormEvent) {
     e.preventDefault();
-    if (!courseId) return flash("请选择课程。");
+    if (!courseId) return flash("Please select a course.");
     setSubmittingAssignment(true);
     const res = await fetch("/api/admin/assignments", {
       method: "POST",
@@ -633,7 +633,7 @@ function AssignmentsTab({
     setTitle("");
     setDueDate("");
     setMaxScore("");
-    flash("已添加作业。");
+    flash("Assignment added.");
     reload();
   }
 
@@ -643,13 +643,13 @@ function AssignmentsTab({
     });
     const json = await res.json();
     if (!res.ok) return flash(json.error);
-    flash("已删除。");
+    flash("Deleted.");
     reload();
   }
 
   async function upsertScore(e: React.FormEvent) {
     e.preventDefault();
-    if (!scoreAssignmentId || !scoreStudentId) return flash("请选择作业和学生。");
+    if (!scoreAssignmentId || !scoreStudentId) return flash("Please select an assignment and a student.");
     setSubmittingScore(true);
     const res = await fetch("/api/admin/scores", {
       method: "POST",
@@ -667,7 +667,7 @@ function AssignmentsTab({
     if (!res.ok) return flash(json.error);
     setScore("");
     setFeedback("");
-    flash("已登记作业得分。");
+    flash("Score saved.");
     reload();
   }
 
@@ -675,23 +675,23 @@ function AssignmentsTab({
     const res = await fetch(`/api/admin/scores?id=${id}`, { method: "DELETE" });
     const json = await res.json();
     if (!res.ok) return flash(json.error);
-    flash("已删除。");
+    flash("Deleted.");
     reload();
   }
 
   return (
     <div className="space-y-6">
       <Card>
-        <h2 className="font-display text-lg font-semibold mb-4">添加作业</h2>
+        <h2 className="font-display text-lg font-semibold mb-4">Add Assignment</h2>
         <form onSubmit={addAssignment} className="grid sm:grid-cols-4 gap-4">
-          <Field label="所属课程">
+          <Field label="Course">
             <select
               className={inputClass}
               value={courseId}
               onChange={(e) => setCourseId(e.target.value)}
               required
             >
-              <option value="">选择课程</option>
+              <option value="">Select course</option>
               {data.courses.map((c) => (
                 <option key={c.id} value={c.id}>
                   {c.name}
@@ -699,7 +699,7 @@ function AssignmentsTab({
               ))}
             </select>
           </Field>
-          <Field label="作业标题">
+          <Field label="Assignment Title">
             <input
               className={inputClass}
               value={title}
@@ -707,7 +707,7 @@ function AssignmentsTab({
               required
             />
           </Field>
-          <Field label="截止日期">
+          <Field label="Due Date">
             <input
               type="date"
               className={inputClass}
@@ -715,7 +715,7 @@ function AssignmentsTab({
               onChange={(e) => setDueDate(e.target.value)}
             />
           </Field>
-          <Field label="满分">
+          <Field label="Max Score">
             <input
               type="number"
               className={inputClass}
@@ -725,7 +725,7 @@ function AssignmentsTab({
           </Field>
           <div className="sm:col-span-4">
             <PrimaryButton disabled={submittingAssignment}>
-              {submittingAssignment ? "添加中…" : "添加作业"}
+              {submittingAssignment ? "Adding…" : "Add Assignment"}
             </PrimaryButton>
           </div>
         </form>
@@ -733,16 +733,16 @@ function AssignmentsTab({
 
       <Card>
         <h2 className="font-display text-lg font-semibold mb-4">
-          作业列表（{data.assignments.length}）
+          Assignments ({data.assignments.length})
         </h2>
         <table className="w-full text-sm">
           <thead>
             <tr className="ledger-rule text-left text-[var(--ink-soft)] font-mono text-xs uppercase">
-              <th className="py-2">标题</th>
-              <th className="py-2">课程</th>
-              <th className="py-2">截止日期</th>
-              <th className="py-2">满分</th>
-              <th className="py-2 text-right">操作</th>
+              <th className="py-2">Title</th>
+              <th className="py-2">Course</th>
+              <th className="py-2">Due Date</th>
+              <th className="py-2">Max Score</th>
+              <th className="py-2 text-right">Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -760,7 +760,7 @@ function AssignmentsTab({
                 </td>
                 <td className="py-2 text-right">
                   <DangerLink onClick={() => removeAssignment(a.id)}>
-                    删除
+                    Delete
                   </DangerLink>
                 </td>
               </tr>
@@ -771,40 +771,40 @@ function AssignmentsTab({
 
       <Card>
         <h2 className="font-display text-lg font-semibold mb-4">
-          登记学生作业得分
+          Record Assignment Score
         </h2>
         <form onSubmit={upsertScore} className="grid sm:grid-cols-5 gap-4">
-          <Field label="作业">
+          <Field label="Assignment">
             <select
               className={inputClass}
               value={scoreAssignmentId}
               onChange={(e) => setScoreAssignmentId(e.target.value)}
               required
             >
-              <option value="">选择作业</option>
+              <option value="">Select assignment</option>
               {data.assignments.map((a) => (
                 <option key={a.id} value={a.id}>
-                  {a.title}（{courseName(a.course_id)}）
+                  {a.title} ({courseName(a.course_id)})
                 </option>
               ))}
             </select>
           </Field>
-          <Field label="学生">
+          <Field label="Student">
             <select
               className={inputClass}
               value={scoreStudentId}
               onChange={(e) => setScoreStudentId(e.target.value)}
               required
             >
-              <option value="">选择学生</option>
+              <option value="">Select student</option>
               {data.students.map((s) => (
                 <option key={s.id} value={s.id}>
-                  {s.name}（{s.student_id}）
+                  {s.name} ({s.student_id})
                 </option>
               ))}
             </select>
           </Field>
-          <Field label="得分">
+          <Field label="Score">
             <input
               type="number"
               className={inputClass}
@@ -812,19 +812,19 @@ function AssignmentsTab({
               onChange={(e) => setScore(e.target.value)}
             />
           </Field>
-          <Field label="状态">
+          <Field label="Status">
             <select
               className={inputClass}
               value={status}
               onChange={(e) => setStatus(e.target.value)}
             >
-              <option value="assigned">待完成</option>
-              <option value="submitted">已提交</option>
-              <option value="graded">已批改</option>
-              <option value="missing">未提交</option>
+              <option value="assigned">Assigned</option>
+              <option value="submitted">Submitted</option>
+              <option value="graded">Graded</option>
+              <option value="missing">Missing</option>
             </select>
           </Field>
-          <Field label="评语（可选）">
+          <Field label="Feedback (optional)">
             <input
               className={inputClass}
               value={feedback}
@@ -833,7 +833,7 @@ function AssignmentsTab({
           </Field>
           <div className="sm:col-span-5">
             <PrimaryButton disabled={submittingScore}>
-              {submittingScore ? "保存中…" : "保存得分"}
+              {submittingScore ? "Saving…" : "Save Score"}
             </PrimaryButton>
           </div>
         </form>
@@ -841,16 +841,16 @@ function AssignmentsTab({
 
       <Card>
         <h2 className="font-display text-lg font-semibold mb-4">
-          已登记的作业得分（{data.scores.length}）
+          Recorded Scores ({data.scores.length})
         </h2>
         <table className="w-full text-sm">
           <thead>
             <tr className="ledger-rule text-left text-[var(--ink-soft)] font-mono text-xs uppercase">
-              <th className="py-2">作业</th>
-              <th className="py-2">学生</th>
-              <th className="py-2">状态</th>
-              <th className="py-2">得分</th>
-              <th className="py-2 text-right">操作</th>
+              <th className="py-2">Assignment</th>
+              <th className="py-2">Student</th>
+              <th className="py-2">Status</th>
+              <th className="py-2">Score</th>
+              <th className="py-2 text-right">Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -861,7 +861,7 @@ function AssignmentsTab({
                 <td className="py-2 font-mono text-xs">{s.status}</td>
                 <td className="py-2 font-mono">{s.score ?? "—"}</td>
                 <td className="py-2 text-right">
-                  <DangerLink onClick={() => removeScore(s.id)}>删除</DangerLink>
+                  <DangerLink onClick={() => removeScore(s.id)}>Delete</DangerLink>
                 </td>
               </tr>
             ))}

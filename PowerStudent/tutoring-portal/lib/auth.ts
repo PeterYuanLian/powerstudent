@@ -6,15 +6,15 @@ export const ADMIN_COOKIE = "portal_admin_session";
 function getSecret() {
   const secret = process.env.AUTH_SECRET;
   if (!secret) {
-    throw new Error("缺少 AUTH_SECRET 环境变量。");
+    throw new Error("Missing AUTH_SECRET environment variable.");
   }
   return new TextEncoder().encode(secret);
 }
 
 export type StudentSession = {
   role: "student";
-  studentId: string; // 数据库中的学号
-  studentDbId: string; // 数据库主键
+  studentId: string; // student ID as stored in the database
+  studentDbId: string; // database primary key
   name: string;
 };
 

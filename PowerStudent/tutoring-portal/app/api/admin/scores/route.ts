@@ -8,7 +8,7 @@ export async function POST(req: NextRequest) {
 
   const { assignmentId, studentId, score, status, feedback } = await req.json();
   if (!assignmentId || !studentId) {
-    return NextResponse.json({ error: "作业和学生均为必填。" }, { status: 400 });
+    return NextResponse.json({ error: "Assignment and student are required." }, { status: 400 });
   }
 
   const supabase = getSupabaseAdmin();
@@ -36,7 +36,7 @@ export async function DELETE(req: NextRequest) {
   if (authError) return authError;
 
   const id = req.nextUrl.searchParams.get("id");
-  if (!id) return NextResponse.json({ error: "缺少 id。" }, { status: 400 });
+  if (!id) return NextResponse.json({ error: "Missing id." }, { status: 400 });
 
   const supabase = getSupabaseAdmin();
   const { error } = await supabase.from("assignment_scores").delete().eq("id", id);

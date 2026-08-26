@@ -15,7 +15,7 @@ export async function requireAdmin() {
   if (!session || session.role !== "admin") {
     return {
       session: null,
-      error: NextResponse.json({ error: "未登录管理后台。" }, { status: 401 }),
+      error: NextResponse.json({ error: "Not signed in to the admin dashboard." }, { status: 401 }),
     };
   }
   return { session, error: null };
@@ -28,7 +28,7 @@ export async function requireStudent() {
   if (!session || session.role !== "student") {
     return {
       session: null,
-      error: NextResponse.json({ error: "未登录学生账号。" }, { status: 401 }),
+      error: NextResponse.json({ error: "Not signed in as a student." }, { status: 401 }),
     };
   }
   return { session, error: null };

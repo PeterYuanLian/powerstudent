@@ -7,7 +7,7 @@ export async function POST(req: NextRequest) {
   if (authError) return authError;
 
   const { name, subject, teacher, schedule } = await req.json();
-  if (!name) return NextResponse.json({ error: "课程名称必填。" }, { status: 400 });
+  if (!name) return NextResponse.json({ error: "Course name is required." }, { status: 400 });
 
   const supabase = getSupabaseAdmin();
   const { data, error } = await supabase
@@ -25,7 +25,7 @@ export async function PATCH(req: NextRequest) {
   if (authError) return authError;
 
   const { id, name, subject, teacher, schedule } = await req.json();
-  if (!id) return NextResponse.json({ error: "缺少课程 id。" }, { status: 400 });
+  if (!id) return NextResponse.json({ error: "Missing course id." }, { status: 400 });
 
   const supabase = getSupabaseAdmin();
   const update: Record<string, string> = {};
@@ -44,7 +44,7 @@ export async function DELETE(req: NextRequest) {
   if (authError) return authError;
 
   const id = req.nextUrl.searchParams.get("id");
-  if (!id) return NextResponse.json({ error: "缺少课程 id。" }, { status: 400 });
+  if (!id) return NextResponse.json({ error: "Missing course id." }, { status: 400 });
 
   const supabase = getSupabaseAdmin();
   const { error } = await supabase.from("courses").delete().eq("id", id);

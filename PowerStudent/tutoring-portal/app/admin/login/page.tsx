@@ -21,7 +21,7 @@ export default function AdminLoginPage() {
       });
       const data = await res.json();
       if (!res.ok) {
-        setError(data.error || "登录失败。");
+        setError(data.error || "Login failed.");
         return;
       }
       router.push("/admin");
@@ -34,14 +34,14 @@ export default function AdminLoginPage() {
     <main className="flex-1 flex items-center justify-center px-6 py-16">
       <div className="w-full max-w-sm">
         <p className="font-mono text-xs tracking-[0.2em] uppercase text-[var(--ink-soft)] mb-2">
-          管理后台
+          Admin Dashboard
         </p>
-        <h1 className="font-display text-2xl font-semibold mb-8">老师登录</h1>
+        <h1 className="font-display text-2xl font-semibold mb-8">Teacher Login</h1>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label className="block text-sm mb-1 text-[var(--ink-soft)]">
-              管理密码
+              Admin Password
             </label>
             <input
               type="password"
@@ -59,7 +59,7 @@ export default function AdminLoginPage() {
             disabled={loading}
             className="w-full rounded-md bg-[var(--ledger-blue)] text-white py-2.5 font-medium hover:bg-[var(--ledger-blue-deep)] transition-colors disabled:opacity-60"
           >
-            {loading ? "登录中…" : "进入管理后台"}
+            {loading ? "Signing in…" : "Enter Admin Dashboard"}
           </button>
         </form>
       </div>

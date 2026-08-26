@@ -8,7 +8,7 @@ export async function POST(req: NextRequest) {
 
   const { courseId, title, dueDate, maxScore } = await req.json();
   if (!courseId || !title) {
-    return NextResponse.json({ error: "课程和作业标题为必填。" }, { status: 400 });
+    return NextResponse.json({ error: "Course and assignment title are required." }, { status: 400 });
   }
 
   const supabase = getSupabaseAdmin();
@@ -32,7 +32,7 @@ export async function PATCH(req: NextRequest) {
   if (authError) return authError;
 
   const { id, title, dueDate, maxScore } = await req.json();
-  if (!id) return NextResponse.json({ error: "缺少作业 id。" }, { status: 400 });
+  if (!id) return NextResponse.json({ error: "Missing assignment id." }, { status: 400 });
 
   const supabase = getSupabaseAdmin();
   const update: Record<string, unknown> = {};
@@ -50,7 +50,7 @@ export async function DELETE(req: NextRequest) {
   if (authError) return authError;
 
   const id = req.nextUrl.searchParams.get("id");
-  if (!id) return NextResponse.json({ error: "缺少作业 id。" }, { status: 400 });
+  if (!id) return NextResponse.json({ error: "Missing assignment id." }, { status: 400 });
 
   const supabase = getSupabaseAdmin();
   const { error } = await supabase.from("assignments").delete().eq("id", id);
