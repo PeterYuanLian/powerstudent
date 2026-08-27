@@ -17,7 +17,8 @@ export async function GET() {
       supabase.from("courses").select("*").order("name"),
       supabase
         .from("enrollments")
-        .select("id, student_id, course_id, grade, grade_percent"),
+        .select("id, student_id, course_id, period, grade, grade_percent")
+        .order("period", { ascending: false }),
       supabase
         .from("assignments")
         .select("*")

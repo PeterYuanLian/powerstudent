@@ -21,15 +21,18 @@ create table if not exists courses (
   created_at timestamptz default now()
 );
 
--- Enrollments / grades table: one student's overall grade in one course
+-- Enrollments / report card entries: one student's grade in one course, for one month (period)
+-- period is stored as 'YYYY-MM', e.g. '2026-08', so a student can have a
+-- different grade for the same course in August vs. September.
 create table if not exists enrollments (
   id uuid primary key default gen_random_uuid(),
   student_id uuid not null references students(id) on delete cascade,
   course_id uuid not null references courses(id) on delete cascade,
+  period text not null,  -- e.g. "2026-08" — the report card month
   grade text,          -- e.g. "A" / "92", free text so it's easy to fill in by hand
   grade_percent numeric, -- optional: a percentage value, used for stats/sorting
   created_at timestamptz default now(),
-  unique(student_id, course_id)
+  unique(student_id, course_id, period)
 );
 
 -- Assignments table: belongs to a course

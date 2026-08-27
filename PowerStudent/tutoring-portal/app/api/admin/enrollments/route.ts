@@ -2,14 +2,26 @@ import { NextRequest, NextResponse } from "next/server";
 import { getSupabaseAdmin } from "@/lib/supabase";
 import { requireAdmin } from "@/lib/guard";
 
-// Create an enrollment, or update the grade of an existing one (upsert on student_id + course_id)
+const PERIOD_RE = /^\d{4}-\d{2}$/;
+
+// Create a report card entry, or update an existing one for the same
+// student + course + month (upsert on student_id, course_id, period)
 export async function POST(req: NextRequest) {
   const { error: authError } = await requireAdmin();
   if (authError) return authError;
 
-  const { studentId, courseId, grade, gradePercent } = await req.json();
-  if (!studentId || !courseId) {
-    return NextResponse.json({ error: "Student and course are required." }, { status: 400 });
+  const { studentId, courseId, period, grade, gradePercent } = await req.json();
+  if (!studentId || !courseId || !period) {
+    return NextResponse.json(
+      { error: "Student, course, and period are required." },
+      { status: 400 }
+    );
+  }
+  if (!PERIOD_RE.test(period)) {
+    return NextResponse.json(
+      { error: "Period must be in YYYY-MM format." },
+      { status: 400 }
+    );
   }
 
   const supabase = getSupabaseAdmin();
@@ -19,10 +31,11 @@ export async function POST(req: NextRequest) {
       {
         student_id: studentId,
         course_id: courseId,
+        period,
         grade: grade ?? null,
         grade_percent: gradePercent ?? null,
       },
-      { onConflict: "student_id,course_id" }
+      { onConflict: "student_id,course_id,period" }
     )
     .select("*")
     .single();

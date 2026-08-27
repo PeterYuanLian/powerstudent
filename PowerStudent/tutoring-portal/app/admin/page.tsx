@@ -15,6 +15,7 @@ type Enrollment = {
   id: string;
   student_id: string;
   course_id: string;
+  period: string;
   grade: string | null;
   grade_percent: number | null;
 };
@@ -42,7 +43,7 @@ type Overview = {
   scores: ScoreRow[];
 };
 
-const TABS = ["Students", "Courses", "Grades", "Assignments"] as const;
+const TABS = ["Students", "Courses", "Report Cards", "Assignments"] as const;
 
 export default function AdminPage() {
   const router = useRouter();
@@ -127,7 +128,7 @@ export default function AdminPage() {
         <StudentsTab data={data} reload={load} flash={flash} />
       )}
       {tab === "Courses" && <CoursesTab data={data} reload={load} flash={flash} />}
-      {tab === "Grades" && (
+      {tab === "Report Cards" && (
         <EnrollmentsTab data={data} reload={load} flash={flash} />
       )}
       {tab === "Assignments" && (
@@ -138,11 +139,7 @@ export default function AdminPage() {
 }
 
 function Card({ children }: { children: React.ReactNode }) {
-  return (
-    <div className="bg-white rounded-lg border border-[var(--paper-line)] p-5">
-      {children}
-    </div>
-  );
+  return <div className="card p-5">{children}</div>;
 }
 
 function Field({
@@ -430,7 +427,18 @@ function CoursesTab({
   );
 }
 
-// ---------- Grades (enrollment + grade entry) ----------
+function periodLabel(period: string) {
+  const [y, m] = period.split("-").map(Number);
+  const d = new Date(y, (m || 1) - 1, 1);
+  return d.toLocaleDateString("en-US", { month: "long", year: "numeric" });
+}
+
+function currentPeriod() {
+  const now = new Date();
+  return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
+}
+
+// ---------- Report Cards (enrollment + monthly grade entry) ----------
 function EnrollmentsTab({
   data,
   reload,
@@ -442,18 +450,30 @@ function EnrollmentsTab({
 }) {
   const [studentId, setStudentId] = useState("");
   const [courseId, setCourseId] = useState("");
+  const [period, setPeriod] = useState(currentPeriod());
   const [grade, setGrade] = useState("");
   const [gradePercent, setGradePercent] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const [filterPeriod, setFilterPeriod] = useState("all");
 
   const studentName = (id: string) =>
     data.students.find((s) => s.id === id)?.name ?? "(deleted student)";
   const courseName = (id: string) =>
     data.courses.find((c) => c.id === id)?.name ?? "(deleted course)";
 
+  const availablePeriods = Array.from(
+    new Set(data.enrollments.map((en) => en.period))
+  ).sort((a, b) => (a < b ? 1 : -1));
+
+  const visibleEnrollments =
+    filterPeriod === "all"
+      ? data.enrollments
+      : data.enrollments.filter((en) => en.period === filterPeriod);
+
   async function upsertEnrollment(e: React.FormEvent) {
     e.preventDefault();
-    if (!studentId || !courseId) return flash("Please select a student and a course.");
+    if (!studentId || !courseId || !period)
+      return flash("Please select a student, course, and month.");
     setSubmitting(true);
     const res = await fetch("/api/admin/enrollments", {
       method: "POST",
@@ -461,6 +481,7 @@ function EnrollmentsTab({
       body: JSON.stringify({
         studentId,
         courseId,
+        period,
         grade: grade || null,
         gradePercent: gradePercent ? Number(gradePercent) : null,
       }),
@@ -470,7 +491,7 @@ function EnrollmentsTab({
     if (!res.ok) return flash(json.error);
     setGrade("");
     setGradePercent("");
-    flash("Grade saved.");
+    flash("Report card entry saved.");
     reload();
   }
 
@@ -488,9 +509,9 @@ function EnrollmentsTab({
     <div className="space-y-6">
       <Card>
         <h2 className="font-display text-lg font-semibold mb-4">
-          Enroll Student / Set Grade
+          Add Report Card Entry
         </h2>
-        <form onSubmit={upsertEnrollment} className="grid sm:grid-cols-4 gap-4">
+        <form onSubmit={upsertEnrollment} className="grid sm:grid-cols-5 gap-4">
           <Field label="Student">
             <select
               className={inputClass}
@@ -521,6 +542,15 @@ function EnrollmentsTab({
               ))}
             </select>
           </Field>
+          <Field label="Month">
+            <input
+              type="month"
+              className={inputClass}
+              value={period}
+              onChange={(e) => setPeriod(e.target.value)}
+              required
+            />
+          </Field>
           <Field label="Grade (e.g. A / 92)">
             <input
               className={inputClass}
@@ -536,35 +566,53 @@ function EnrollmentsTab({
               onChange={(e) => setGradePercent(e.target.value)}
             />
           </Field>
-          <div className="sm:col-span-4">
+          <div className="sm:col-span-5">
             <PrimaryButton disabled={submitting}>
-              {submitting ? "Saving…" : "Save Grade"}
+              {submitting ? "Saving…" : "Save Entry"}
             </PrimaryButton>
             <span className="ml-3 text-xs text-[var(--ink-soft)]">
-              Submitting again for the same student + course overwrites the existing grade.
+              Submitting again for the same student + course + month overwrites that entry.
             </span>
           </div>
         </form>
       </Card>
 
       <Card>
-        <h2 className="font-display text-lg font-semibold mb-4">
-          Grades on Record ({data.enrollments.length})
-        </h2>
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="font-display text-lg font-semibold">
+            Report Card Entries ({visibleEnrollments.length})
+          </h2>
+          <select
+            className={`${inputClass} w-auto`}
+            value={filterPeriod}
+            onChange={(e) => setFilterPeriod(e.target.value)}
+          >
+            <option value="all">All months</option>
+            {availablePeriods.map((p) => (
+              <option key={p} value={p}>
+                {periodLabel(p)}
+              </option>
+            ))}
+          </select>
+        </div>
         <table className="w-full text-sm">
           <thead>
             <tr className="ledger-rule text-left text-[var(--ink-soft)] font-mono text-xs uppercase">
               <th className="py-2">Student</th>
               <th className="py-2">Course</th>
+              <th className="py-2">Month</th>
               <th className="py-2">Grade</th>
               <th className="py-2 text-right">Actions</th>
             </tr>
           </thead>
           <tbody>
-            {data.enrollments.map((en) => (
+            {visibleEnrollments.map((en) => (
               <tr key={en.id} className="ledger-rule last:border-b-0">
                 <td className="py-2">{studentName(en.student_id)}</td>
                 <td className="py-2">{courseName(en.course_id)}</td>
+                <td className="py-2 font-mono text-[var(--ink-soft)]">
+                  {periodLabel(en.period)}
+                </td>
                 <td className="py-2 font-mono">
                   {en.grade ?? "—"}
                   {en.grade_percent !== null ? ` (${en.grade_percent}%)` : ""}
@@ -582,6 +630,7 @@ function EnrollmentsTab({
     </div>
   );
 }
+
 
 // ---------- Assignments ----------
 function AssignmentsTab({

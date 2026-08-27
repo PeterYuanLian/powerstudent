@@ -11,16 +11,63 @@ export async function GET() {
 
   const { data: enrollments, error: enrollError } = await supabase
     .from("enrollments")
-    .select("id, grade, grade_percent, courses(id, name, subject, teacher, schedule)")
-    .eq("student_id", studentDbId);
+    .select(
+      "id, period, grade, grade_percent, courses(id, name, subject, teacher, schedule)"
+    )
+    .eq("student_id", studentDbId)
+    .order("period", { ascending: false });
 
   if (enrollError) {
     return NextResponse.json({ error: enrollError.message }, { status: 500 });
   }
 
-  const courseIds = (enrollments ?? [])
-    .map((e) => (e.courses as unknown as { id: string } | null)?.id)
-    .filter(Boolean) as string[];
+  type CourseRow = {
+    id: string;
+    name: string;
+    subject: string | null;
+    teacher: string | null;
+    schedule: string | null;
+  };
+
+  // Distinct courses the student has ever had a report card entry for —
+  // shown as the general "My Courses" roster (not tied to one month).
+  const courseMap = new Map<string, CourseRow>();
+  for (const e of enrollments ?? []) {
+    const c = e.courses as unknown as CourseRow | null;
+    if (c && !courseMap.has(c.id)) courseMap.set(c.id, c);
+  }
+  const courses = Array.from(courseMap.values());
+  const courseIds = courses.map((c) => c.id);
+
+  // Group grades by month into report cards, most recent first.
+  const periodMap = new Map<
+    string,
+    Array<{
+      courseId: string;
+      name: string;
+      subject: string | null;
+      teacher: string | null;
+      grade: string | null;
+      gradePercent: number | null;
+    }>
+  >();
+  for (const e of enrollments ?? []) {
+    const c = e.courses as unknown as CourseRow | null;
+    if (!c) continue;
+    const list = periodMap.get(e.period) ?? [];
+    list.push({
+      courseId: c.id,
+      name: c.name,
+      subject: c.subject,
+      teacher: c.teacher,
+      grade: e.grade,
+      gradePercent: e.grade_percent,
+    });
+    periodMap.set(e.period, list);
+  }
+  const reportCards = Array.from(periodMap.entries())
+    .sort((a, b) => (a[0] < b[0] ? 1 : -1))
+    .map(([period, courseGrades]) => ({ period, courseGrades }));
 
   let assignments: Array<Record<string, unknown>> = [];
   if (courseIds.length > 0) {
@@ -64,29 +111,11 @@ export async function GET() {
     });
   }
 
-  const courses = (enrollments ?? []).map((e) => {
-    const c = e.courses as unknown as {
-      id: string;
-      name: string;
-      subject: string | null;
-      teacher: string | null;
-      schedule: string | null;
-    } | null;
-    return {
-      id: c?.id,
-      name: c?.name,
-      subject: c?.subject,
-      teacher: c?.teacher,
-      schedule: c?.schedule,
-      grade: e.grade,
-      gradePercent: e.grade_percent,
-    };
-  });
-
   return NextResponse.json({
     name: session!.name,
     studentId: session!.studentId,
     courses,
+    reportCards,
     assignments,
   });
 }
