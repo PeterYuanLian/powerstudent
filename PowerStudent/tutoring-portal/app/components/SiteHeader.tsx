@@ -17,6 +17,18 @@ export default function SiteHeader() {
           <Link href="/admin/login" className="hover:text-white transition-colors">
             Admin
           </Link>
+          <a href="https://www.wccusd.net/" className="hover:text-white transition-colors">
+            Learn About the District
+          </a>
+          <a href="https://middlecollege.wccusd.net/" className="hover:text-white transition-colors">
+            School Events
+          </a>
+          <a href="https://middlecollege.wccusd.net/resources" className="hover:text-white transition-colors">
+            Resources
+          </a>
+          <a href="" className="hover:text-white transition-colors">
+            
+          </a>
         </nav>
       </div>
     </header>
